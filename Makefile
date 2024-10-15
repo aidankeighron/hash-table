@@ -1,8 +1,8 @@
 CC=gcc
-DEPS = hash_table.h
+DEPS = hashTable.h
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< -Wall -Wextra -Werror
 
-hash_table: hash_table.o
-	$(CC) -o hash_table hash_table.o 
+hash_table: hashTable.o
+	$(CC) -o hashTable hashTable.o 
