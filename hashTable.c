@@ -109,6 +109,8 @@ void freeHashTable(HashTableElement** hashTable) {
     free(start);
 }
 
+// check for memory leaks: valgrind --tool=memcheck --leak-check=full ./hashTable
+
 int main() {
     HashTableElement** hashTable = initHashTable(hashMapSize);
     printHashTable(hashTable);
