@@ -37,7 +37,7 @@ void printHashTable(HashTableElement** hashTable) {
 }
 
 void insert(HashTableElement** hashTable, char* key, int value) {
-    // strncpy(hashTable[value]->key, key, 99);
+    // strncpy(hashTable[value]->key, key, 99); 
     hashTable[value]->value = 10;
 }
 
