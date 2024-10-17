@@ -4,7 +4,8 @@
 #include <stdbool.h>
 
 // Global
-int hashMapSize = 10;
+int hashMapSize = 4;
+int capacity = 0;
 
 typedef struct HashTableElement {
     int value;
@@ -12,6 +13,9 @@ typedef struct HashTableElement {
     bool deleted;
 } HashTableElement;
 typedef HashTableElement** HashTable;
+
+HashTable grow(HashTable);
+void freeHashTable(HashTable*);
 
 HashTable initHashTable(int size) {
     if (size <= 0) {
@@ -36,9 +40,9 @@ HashTable initHashTable(int size) {
 void printHashTable(HashTable hashTable) {
     printf("{");
     for (; *hashTable != NULL; ++hashTable) {
-        if ((*hashTable)->key != NULL) {
+        // if ((*hashTable)->key != NULL) {
             printf("%s: %d, ", (*hashTable)->key, (*hashTable)->value);
-        }
+        // }
     }
     printf("%p", (*hashTable));
     printf("}\n");
@@ -54,19 +58,42 @@ int hash(char* key) {
     return hash % hashMapSize;
 }
 
-void insert(HashTable hashTable, char* key, int value) {
+void insert(HashTable* hashTable, char* key, int value) {
     int index = hash(key);
+    capacity += 1;
 
-    while (hashTable[index]->key != NULL && *hashTable[index]->key != *key) {
+    while ((*hashTable)[index]->key != NULL && *(*hashTable)[index]->key != *key) {
         index += 1;
         index %= hashMapSize;
     }
 
-    if (hashTable[index]->key == NULL) {
-        hashTable[index]->key = (char *)calloc(100, sizeof(char));
+    if ((*hashTable)[index]->key == NULL) {
+        (*hashTable)[index]->key = (char *)calloc(100, sizeof(char));
     }
-    strncpy(hashTable[index]->key, key, 100);
-    hashTable[index]->value = value;
+    strncpy((*hashTable)[index]->key, key, 100);
+    (*hashTable)[index]->value = value;
+
+    if (capacity >= hashMapSize) {
+        *hashTable = grow(*hashTable);
+    }
+}
+
+HashTable grow(HashTable hashTable) {
+    hashMapSize *= 2;
+    HashTable newHashTable = initHashTable(hashMapSize);
+    // printHashTable(hashTable);
+    // printHashTable(newHashTable);
+    for (; (*(hashTable)) != NULL; ++(hashTable)) {
+        if ((*(hashTable))->key != NULL) {
+            insert(&newHashTable, (*(hashTable))->key, (*(hashTable))->value);
+        }
+    }
+    // printHashTable(hashTable);
+    // printHashTable(newHashTable);
+    // hashTable = &newHashTable;
+    // freeHashTable(&hashTable);
+
+    return newHashTable;
 }
 
 int get(HashTable hashTable, char* key) {
@@ -85,13 +112,9 @@ int get(HashTable hashTable, char* key) {
     return hashTable[index]->value;
 }
 
-// void grow(HashTable* hashTable) {
-
-// }
-
 void delete(HashTable hashTable, char* key) {
     int index = hash(key);
-
+    capacity -= 1;
     while ((hashTable[index]->key == NULL && hashTable[index]->deleted) || 
         (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
         index += 1;
@@ -126,10 +149,10 @@ int main() {
     HashTable hashTable = initHashTable(hashMapSize);
     printHashTable(hashTable);
 
-    insert(hashTable, "key", 5);
-    insert(hashTable, "key", 6);
-    insert(hashTable, "yek", 10);
-    insert(hashTable, "keys", 10);
+    insert(&hashTable, "key", 5);
+    insert(&hashTable, "key", 6);
+    insert(&hashTable, "yek", 10);
+    insert(&hashTable, "keys", 10);
 
     printf("keys: %d\n", get(hashTable, "keys"));
     printf("not: %d\n", get(hashTable, "not"));
