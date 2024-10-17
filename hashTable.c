@@ -11,13 +11,14 @@ typedef struct HashTableElement {
     char* key;
     bool deleted;
 } HashTableElement;
+typedef HashTableElement** HashTable;
 
-HashTableElement** initHashTable(int size) {
+HashTable initHashTable(int size) {
     if (size <= 0) {
         printf("Invalid Size");
         return NULL;
     }
-    HashTableElement** hashTable = (HashTableElement**)calloc(size+1, sizeof(HashTableElement*));
+    HashTable hashTable = (HashTable)calloc(size+1, sizeof(HashTableElement*));
     for (int i = 0; i < size; ++i) {
         HashTableElement* element = (HashTableElement*)calloc(1, sizeof(HashTableElement));
         // element->key = (char*)calloc(100, sizeof(char));
@@ -32,7 +33,7 @@ HashTableElement** initHashTable(int size) {
     return hashTable;
 }
 
-void printHashTable(HashTableElement** hashTable) {
+void printHashTable(HashTable hashTable) {
     printf("{");
     for (; *hashTable != NULL; ++hashTable) {
         if ((*hashTable)->key != NULL) {
@@ -53,11 +54,12 @@ int hash(char* key) {
     return hash % hashMapSize;
 }
 
-void insert(HashTableElement** hashTable, char* key, int value) {
+void insert(HashTable hashTable, char* key, int value) {
     int index = hash(key);
 
     while (hashTable[index]->key != NULL && *hashTable[index]->key != *key) {
-        index = ++index % hashMapSize;
+        index += 1;
+        index %= hashMapSize;
     }
 
     if (hashTable[index]->key == NULL) {
@@ -67,11 +69,13 @@ void insert(HashTableElement** hashTable, char* key, int value) {
     hashTable[index]->value = value;
 }
 
-int get(HashTableElement** hashTable, char* key) {
+int get(HashTable hashTable, char* key) {
     int index = hash(key);
 
-    while (hashTable[index]->key == NULL && hashTable[index]->deleted || (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
-        index = ++index % hashMapSize;
+    while ((hashTable[index]->key == NULL && hashTable[index]->deleted) || 
+        (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
+        index += 1;
+        index %= hashMapSize;
     }
     if (hashTable[index]->key == NULL) {
         printf("Not found\n");
@@ -81,11 +85,17 @@ int get(HashTableElement** hashTable, char* key) {
     return hashTable[index]->value;
 }
 
-void delete(HashTableElement** hashTable, char* key) {
+// void grow(HashTable* hashTable) {
+
+// }
+
+void delete(HashTable hashTable, char* key) {
     int index = hash(key);
 
-    while (hashTable[index]->key == NULL && hashTable[index]->deleted || (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
-        index = ++index % hashMapSize;
+    while ((hashTable[index]->key == NULL && hashTable[index]->deleted) || 
+        (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
+        index += 1;
+        index %= hashMapSize;
     }
     if (hashTable[index]->key == NULL) {
         printf("Not found\n");
@@ -98,21 +108,22 @@ void delete(HashTableElement** hashTable, char* key) {
     hashTable[index]->deleted = true;
 }
 
-void freeHashTable(HashTableElement** hashTable) {
-    HashTableElement** start = hashTable;
+void freeHashTable(HashTable* hashTable) {
+    HashTable start = *hashTable;
     
-    for (; *hashTable != NULL; ++hashTable) {
-        free((*hashTable)->key);
-        free(*hashTable);
+    for (; *(*hashTable) != NULL; ++(*hashTable)) {
+        free((*(*hashTable))->key);
+        free(*(*hashTable));
     }
 
     free(start);
+    *hashTable = NULL;
 }
 
 // check for memory leaks: valgrind --tool=memcheck --leak-check=full ./hashTable
 
 int main() {
-    HashTableElement** hashTable = initHashTable(hashMapSize);
+    HashTable hashTable = initHashTable(hashMapSize);
     printHashTable(hashTable);
 
     insert(hashTable, "key", 5);
@@ -129,6 +140,8 @@ int main() {
     printf("key: %d\n", get(hashTable, "key"));
     printHashTable(hashTable);
     
-    freeHashTable(hashTable);
+    printf("%p\n", hashTable);
+    freeHashTable(&hashTable);
+    printf("%p\n", hashTable);
     return 1;
 }
