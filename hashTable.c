@@ -14,7 +14,7 @@ typedef struct HashTableElement {
 } HashTableElement;
 typedef HashTableElement** HashTable;
 
-HashTable grow(HashTable);
+void grow(HashTable*);
 void freeHashTable(HashTable*);
 
 HashTable initHashTable(int size) {
@@ -25,7 +25,6 @@ HashTable initHashTable(int size) {
     HashTable hashTable = (HashTable)calloc(size+1, sizeof(HashTableElement*));
     for (int i = 0; i < size; ++i) {
         HashTableElement* element = (HashTableElement*)calloc(1, sizeof(HashTableElement));
-        // element->key = (char*)calloc(100, sizeof(char));
         element->key = NULL;
         element->value = 0;
         element->deleted = false;
@@ -60,7 +59,6 @@ int hash(char* key) {
 
 void insert(HashTable* hashTable, char* key, int value) {
     int index = hash(key);
-    capacity += 1;
 
     while ((*hashTable)[index]->key != NULL && *(*hashTable)[index]->key != *key) {
         index += 1;
@@ -69,31 +67,29 @@ void insert(HashTable* hashTable, char* key, int value) {
 
     if ((*hashTable)[index]->key == NULL) {
         (*hashTable)[index]->key = (char *)calloc(100, sizeof(char));
+        capacity += 1;
     }
     strncpy((*hashTable)[index]->key, key, 100);
     (*hashTable)[index]->value = value;
 
     if (capacity >= hashMapSize) {
-        *hashTable = grow(*hashTable);
+        grow(hashTable);
+        printHashTable(*hashTable);
     }
 }
 
-HashTable grow(HashTable hashTable) {
+void grow(HashTable* hashTable) {
     hashMapSize *= 2;
+    capacity = 0;
     HashTable newHashTable = initHashTable(hashMapSize);
-    // printHashTable(hashTable);
-    // printHashTable(newHashTable);
-    for (; (*(hashTable)) != NULL; ++(hashTable)) {
-        if ((*(hashTable))->key != NULL) {
-            insert(&newHashTable, (*(hashTable))->key, (*(hashTable))->value);
+
+    for (; (*(*hashTable)) != NULL; ++(*hashTable)) {
+        if ((*(*hashTable))->key != NULL) {
+            insert(&newHashTable, (*(*hashTable))->key, (*(*hashTable))->value);
         }
     }
-    // printHashTable(hashTable);
-    // printHashTable(newHashTable);
-    // hashTable = &newHashTable;
-    // freeHashTable(&hashTable);
 
-    return newHashTable;
+    *hashTable = newHashTable;
 }
 
 int get(HashTable hashTable, char* key) {
@@ -114,7 +110,6 @@ int get(HashTable hashTable, char* key) {
 
 void delete(HashTable hashTable, char* key) {
     int index = hash(key);
-    capacity -= 1;
     while ((hashTable[index]->key == NULL && hashTable[index]->deleted) || 
         (hashTable[index]->key != NULL && *hashTable[index]->key != *key)) {
         index += 1;
@@ -125,6 +120,7 @@ void delete(HashTable hashTable, char* key) {
         return;
     }
 
+    capacity -= 1;
     free(hashTable[index]->key);
     hashTable[index]->key = NULL;
     hashTable[index]->value = 0;
@@ -153,6 +149,7 @@ int main() {
     insert(&hashTable, "key", 6);
     insert(&hashTable, "yek", 10);
     insert(&hashTable, "keys", 10);
+    insert(&hashTable, "ton", 125);
 
     printf("keys: %d\n", get(hashTable, "keys"));
     printf("not: %d\n", get(hashTable, "not"));
