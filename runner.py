@@ -1,10 +1,11 @@
 import hashTable
-hashTable.callback(print)
+
 
 hashTable.print(True)
 hashTable.set("test", 2)
-hashTable.set("value", 10)
+print(hashTable.get("test"))
+print(hashTable.get("not"))
 hashTable.print(False)
-# hashTable.print(2)
-# print(status)
-print(hashTable)
+hashTable.delete("test")
+print(hashTable.get("test"))
+hashTable.print(False)
