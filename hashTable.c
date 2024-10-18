@@ -8,18 +8,6 @@
 #include "hashTable.h"
 
 HashTable hashTable;
-// static PyObject *hashTableError;
-// static PyObject *my_callback = NULL;
-
-// void pythonPrint(char* value) {
-//     PyObject *arglist;
-//     PyObject *result;
-
-//     /* Time to call the callback */
-//     arglist = Py_BuildValue("(s)", value);
-//     result = PyObject_CallObject(my_callback, arglist);
-//     Py_DECREF(arglist);
-// }
 
 HashTable initHashTable(int size) {
     if (size <= 0) {
@@ -68,18 +56,6 @@ char* _print(HashTable hashTable, bool printNull) {
     return str;
 }
 
-// static PyObject* print(PyObject *self, PyObject *args) {
-//     PyObject* printNull;
-
-//     if (!PyArg_ParseTuple(args, "O", &printNull))
-//         return NULL;
-
-//     char* str = _print(hashTable, PyObject_IsTrue(printNull));
-//     // pythonPrint(str);
-//     free(str);
-//     return PyLong_FromLong(1);
-// }
-
 int hash(char* key) {
     int hash = 0;
 
@@ -109,33 +85,6 @@ void _set(HashTable* hashTable, char* key, int value) {
         grow(hashTable);
     }
 }
-
-
-// static PyObject* set(PyObject *self, PyObject *args) {
-//     char* key;
-//     const int* value;
-
-//     if (!PyArg_ParseTuple(args, "si", &key, &value)) {
-//         return NULL;
-//     }
-//     printf("%s\n", key);
-//     _set(&hashTable, key, 1);
-//     return PyLong_FromLong(1);
-// }
-
-// static PyObject* set(PyObject *self, PyObject *args) {
-//     printf("here3");
-//     const char *command;
-//     int sts;
-
-//     if (!PyArg_ParseTuple(args, "s", &command))
-//         return NULL;
-//     sts = system(command);
-//     if (sts < 0) {
-//         PyErr_SetString(hashTableError, "System command failed");
-//         return NULL;
-//     }
-//     return PyLong_FromLong(sts);
 
 void grow(HashTable* hashTable) {
     hashMapSize *= 2;
@@ -228,6 +177,58 @@ int main() {
     printf("%p\n", hashTable);
     return 1;
 }
+
+// static PyObject *hashTableError;
+// static PyObject *my_callback = NULL;
+
+// void pythonPrint(char* value) {
+//     PyObject *arglist;
+//     PyObject *result;
+
+//     /* Time to call the callback */
+//     arglist = Py_BuildValue("(s)", value);
+//     result = PyObject_CallObject(my_callback, arglist);
+//     Py_DECREF(arglist);
+// }
+
+// static PyObject* print(PyObject *self, PyObject *args) {
+//     PyObject* printNull;
+
+//     if (!PyArg_ParseTuple(args, "O", &printNull))
+//         return NULL;
+
+//     char* str = _print(hashTable, PyObject_IsTrue(printNull));
+//     // pythonPrint(str);
+//     free(str);
+//     return PyLong_FromLong(1);
+// }
+
+// static PyObject* set(PyObject *self, PyObject *args) {
+//     char* key;
+//     const int* value;
+
+//     if (!PyArg_ParseTuple(args, "si", &key, &value)) {
+//         return NULL;
+//     }
+//     printf("%s\n", key);
+//     _set(&hashTable, key, 1);
+//     return PyLong_FromLong(1);
+// }
+
+// static PyObject* set(PyObject *self, PyObject *args) {
+//     printf("here3");
+//     const char *command;
+//     int sts;
+
+//     if (!PyArg_ParseTuple(args, "s", &command))
+//         return NULL;
+//     sts = system(command);
+//     if (sts < 0) {
+//         PyErr_SetString(hashTableError, "System command failed");
+//         return NULL;
+//     }
+//     return PyLong_FromLong(sts);
+
 
 // static PyObject* set_callback(PyObject *dummy, PyObject *args)
 // {
