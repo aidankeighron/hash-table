@@ -1,3 +1,5 @@
+#include "hashTable.h"
+#include <Python.h>
 #define PY_SSIZE_T_CLEAN
 #include <string.h>
 #include <stdio.h>
@@ -128,29 +130,105 @@ void freeHashTable(HashTable* hashTable) {
     *hashTable = NULL;
 }
 
-int main() {
-    hashTable = initHashTable(hashMapSize);
-    _print(hashTable, true);
+static PyObject *hashTableError;
 
-    _set(hashTable, "key", 6);
-    _set(hashTable, "yek", 10);
-    _set(hashTable, "keys", 10);
+static PyObject* print(PyObject *self, PyObject *args) {
+    PyObject* printNull;
 
-    _print(hashTable, true);
-    _set(hashTable, "ton", 125);
-    _print(hashTable, true);
+    if (!PyArg_ParseTuple(args, "O", &printNull))
+        return NULL;
 
-    printf("keys: %d\n", _get(hashTable, "keys"));
-    printf("not: %d\n", _get(hashTable, "not"));
-    printf("key: %d\n", _get(hashTable, "key"));
+    _print(hashTable, PyObject_IsTrue(printNull));
+    return PyLong_FromLong(1);
+}
 
-    _print(hashTable, true);
-    _delete(hashTable, "key");
-    printf("key: %d\n", _get(hashTable, "key"));
-    _print(hashTable, false);
+static PyObject* set(PyObject *self, PyObject *args) {
+    char* key;
+    int* value;
+
+    if (!PyArg_ParseTuple(args, "si", &key, &value)) {
+        return NULL;
+    }
+
+    _set(hashTable, key, 1);
+    return PyLong_FromLong(1);
+}
+
+static PyObject* get(PyObject *self, PyObject *args) {
+    char* key;
+
+    if (!PyArg_ParseTuple(args, "s", &key))
+        return NULL;
     
-    printf("%p\n", hashTable);
-    freeHashTable(&hashTable);
-    printf("%p\n", hashTable);
-    return 1;
+    int value = _get(hashTable, key);
+    return PyLong_FromLong(value);
+}
+
+static PyObject* delete(PyObject *self, PyObject *args) {
+    char* key;
+
+    if (!PyArg_ParseTuple(args, "s", &key))
+        return NULL;
+    
+    _delete(hashTable, key);
+    return PyLong_FromLong(1);
+}
+
+static PyMethodDef hashTableMethods[] = {
+    {"print", print, METH_VARARGS, "Prints hash map"},
+    {"set", set, METH_VARARGS, "Adds key value pair to hash map"},
+    {"get", get, METH_VARARGS, "Gets value of key from hash map"},
+    {"delete", delete, METH_VARARGS, "Deletes key from hash map"},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+static struct PyModuleDef hashTablemodule = {
+    PyModuleDef_HEAD_INIT, "hashTable", NULL, -1, hashTableMethods};
+
+PyMODINIT_FUNC PyInit_hashTable(void) {
+    hashTable = initHashTable(hashMapSize);
+    return PyModule_Create(&hashTablemodule);
+}
+
+int main(int argc, char *argv[]) {
+    PyStatus status;
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+
+    /* Add a built-in module, before Py_Initialize */
+    if (PyImport_AppendInittab("hashTable", PyInit_hashTable) == -1) {
+        fprintf(stderr, "Error: could not extend in-built modules table\n");
+        exit(1);
+    }
+
+    /* Pass argv[0] to the Python interpreter */
+    status = PyConfig_SetBytesString(&config, &config.program_name, argv[0]);
+    if (PyStatus_Exception(status)) {
+        goto exception;
+    }
+
+    /* Initialize the Python interpreter.  Required.
+       If this step fails, it will be a fatal error. */
+    status = Py_InitializeFromConfig(&config);
+    if (PyStatus_Exception(status)) {
+        goto exception;
+    }
+    PyConfig_Clear(&config);
+
+    /* Optionally import the module; alternatively,
+       import can be deferred until the embedded script
+       imports it. */
+    PyObject *pmodule = PyImport_ImportModule("hashTable");
+    if (!pmodule) {
+        PyErr_Print();
+        fprintf(stderr, "Error: could not import module 'hashTable'\n");
+    }
+
+    // ... use Python C API here ...
+
+    return 0;
+
+  exception:
+     PyConfig_Clear(&config);
+     Py_ExitStatusException(status);
 }

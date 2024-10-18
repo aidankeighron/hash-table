@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 
 typedef struct HashTableElement {
     int value;
@@ -7,13 +8,12 @@ typedef struct HashTableElement {
 } HashTableElement;
 typedef HashTableElement** HashTable;
 
+HashTable hashTable;
 int hashMapSize = 4;
 int capacity = 0;
 
 HashTable initHashTable(int);
-char* _print(HashTable, bool);
-void _set(HashTable*, char*, int);
-void grow(HashTable*);
+void _print(HashTable, bool);
+void _set(HashTable, char*, int);
 int _get(HashTable, char*);
-void _del(HashTable, char*);
-void freeHashTable(HashTable*);
+void _delete(HashTable, char*);

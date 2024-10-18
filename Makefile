@@ -29,4 +29,4 @@ memory:
 
 .PHONY: python
 python:
-	gcc -shared -o hashTable.so -fPIC hashTable.c -I/usr/include/python3.10 -lpython3.10
+	gcc -shared -o hashTable.so -fPIC python.c -I/usr/include/python3.10 -lpython3.10
