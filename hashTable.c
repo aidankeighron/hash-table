@@ -34,10 +34,11 @@ void _print(HashTable hashTable, bool printNull) {
     printf("}\n");
 }
 
-int hash(char* key) {
-    int hash = 0;
+long hash(char* key) {
+    long hash = 0;
+    int i = 0;
     for (; *key; ++key) {
-        hash = 181 * hash + *key;
+        hash = 18 * hash + *key + i++;
     }
 
     return hash % hashMapSize;
@@ -63,7 +64,7 @@ void grow() {
 
 void _set(HashTable hashTable, char* key, int value) {
     int index = hash(key);
-
+    printf("%d\n", index);
     while (hashTable[index]->key != NULL && *hashTable[index]->key != *key) {
         index += 1;
         index %= hashMapSize;
@@ -76,7 +77,7 @@ void _set(HashTable hashTable, char* key, int value) {
     strncpy(hashTable[index]->key, key, 100);
     hashTable[index]->value = value;
 
-    if (capacity >= hashMapSize) {
+    if (capacity > hashMapSize/2) {
         grow();
     }
 }
@@ -135,6 +136,14 @@ int main() {
     _set(hashTable, "key", 6);
     _set(hashTable, "yek", 10);
     _set(hashTable, "keys", 10);
+    _print(hashTable, true);
+    _set(hashTable, "keys11212123412123", 10);
+    _print(hashTable, true);
+    _set(hashTable, "keys2", 10);
+    _set(hashTable, "keys3", 10);
+    _set(hashTable, "keys4", 10);
+    _set(hashTable, "keys5", 10);
+    _set(hashTable, "keys6", 10);
 
     _print(hashTable, true);
     _set(hashTable, "ton", 125);

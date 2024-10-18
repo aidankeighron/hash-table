@@ -1,10 +1,9 @@
-#include "hashTable.h"
-#include <Python.h>
 #define PY_SSIZE_T_CLEAN
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <Python.h>
 #include "hashTable.h"
 
 HashTable initHashTable(int size) {
@@ -36,10 +35,12 @@ void _print(HashTable hashTable, bool printNull) {
     printf("}\n");
 }
 
-int hash(char* key) {
-    int hash = 0;
+long hash(char* key) {
+    long hash = 0;
+
+    int i = 0;
     for (; *key; ++key) {
-        hash = 181 * hash + *key;
+        hash = 18 * hash + *key + i++;
     }
 
     return hash % hashMapSize;
@@ -67,7 +68,7 @@ void _set(HashTable hashTable, char* key, int value) {
     int index = hash(key);
 
     while (hashTable[index]->key != NULL && *hashTable[index]->key != *key) {
-        index += 1;
+        index = index + 1;
         index %= hashMapSize;
     }
 
@@ -78,7 +79,7 @@ void _set(HashTable hashTable, char* key, int value) {
     strncpy(hashTable[index]->key, key, 100);
     hashTable[index]->value = value;
 
-    if (capacity >= hashMapSize) {
+    if (capacity > hashMapSize/2) {
         grow();
     }
 }
