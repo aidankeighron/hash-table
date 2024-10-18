@@ -144,13 +144,13 @@ static PyObject* print(PyObject *self, PyObject *args) {
 
 static PyObject* set(PyObject *self, PyObject *args) {
     char* key;
-    int* value;
+    int value;
 
     if (!PyArg_ParseTuple(args, "si", &key, &value)) {
         return NULL;
     }
 
-    _set(hashTable, key, 1);
+    _set(hashTable, key, value);
     return PyLong_FromLong(1);
 }
 
